@@ -9,7 +9,7 @@ from datetime import date
 # 설정
 # ======================================
 DELIM = "-"  # 하이픈 구분자
-DEFAULT_DATE = date.today().strftime("%Y%m%d")  # ✅ 점검일 UI 제거: 오늘 날짜 자동
+DEFAULT_DATE = date.today().strftime("%Y%m%d")  # 점검일(폴더명) 자동
 
 # ======================================
 # 유틸
@@ -19,14 +19,10 @@ def safe_text(s: str) -> str:
     if s is None:
         return ""
     s = str(s).strip()
-    # 윈도우 금지문자 제거
     for ch in r'<>:"/\|?*':
         s = s.replace(ch, "")
-    # 구분자인 '-'가 내용에 들어오면 파싱 애매해질 수 있어 '_'로 치환
     s = s.replace("-", "_")
-    # 점(.)은 구분자/확장자와 헷갈릴 수 있으니 '_'로 치환
     s = s.replace(".", "_")
-    # 연속 공백 정리
     s = " ".join(s.split())
     return s
 
@@ -45,10 +41,8 @@ def load_image_bytes(file):
     else:
         img = Image.open(file)
 
-    # 스마트폰 회전정보 반영
     img = ImageOps.exif_transpose(img)
 
-    # JPEG 저장을 위해 RGB로
     if img.mode not in ("RGB", "L"):
         img = img.convert("RGB")
 
@@ -65,9 +59,6 @@ if "saved_images" not in st.session_state:
 
 if "saved_names" not in st.session_state:
     st.session_state["saved_names"] = []
-
-if "seq" not in st.session_state:
-    st.session_state["seq"] = 0  # 전체 사진 일련번호
 
 # ======================================
 # 교량 목록 로드 (GitHub raw)
@@ -122,7 +113,6 @@ bridge = st.selectbox("교량 선택", bridge_list)
 
 direction = st.selectbox("방향", ["순천", "영암"])
 
-# ✅ 점검일 UI 제거 (자동 적용 안내만)
 st.caption(f"점검일(폴더명)은 자동으로 오늘 날짜({DEFAULT_DATE})가 적용됩니다.")
 
 location = st.radio(
@@ -133,12 +123,12 @@ location = st.radio(
     horizontal=True
 )
 
-# ✅ 내용은 선택(필수 아님)
+# ✅ 내용은 선택(파일명에만 들어감)
 desc = st.text_input("내용 (선택) 예: 균열, 박리, 누수")
 
-# ZIP 안에 폴더 구조로 저장할지
+# ✅ 폴더 구조: 교량/점검일/방향/위치
 make_folders = st.checkbox("ZIP 내부를 폴더 구조로 저장", value=True)
-st.caption("폴더 예시: 교량/점검일/방향/(내용선택)/파일.jpg")
+st.caption("폴더 예시: 교량/점검일/방향/위치/파일.jpg  (내용은 파일명에만 포함)")
 
 uploaded = st.file_uploader(
     "사진 선택 (여러 장 가능)",
@@ -150,15 +140,14 @@ uploaded = st.file_uploader(
 # 사진 저장
 # ======================================
 if st.button("➕ 사진 추가"):
-    # ✅ desc 필수 제거: 사진 + 교량만 있으면 OK
     if not (uploaded and bridge):
         st.warning("사진 / 교량은 필수입니다.")
     else:
         bridge_s = safe_text(bridge)
         direction_s = safe_text(direction)
         location_s = safe_text(location)
-        desc_s = safe_text(desc)  # ✅ 비어있을 수 있음
-        date_s = DEFAULT_DATE     # ✅ 오늘 날짜 고정
+        desc_s = safe_text(desc)  # 비어있을 수 있음
+        date_s = DEFAULT_DATE
 
         added = 0
         for file in uploaded:
@@ -166,22 +155,15 @@ if st.button("➕ 사진 추가"):
             if data is None:
                 continue
 
-            st.session_state["seq"] += 1
-            seq = f"{st.session_state['seq']:03d}"
-
-            # ✅ 파일명: 내용이 없으면 그 구간을 아예 빼서 "--" 안 생기게
+            # ✅ 파일명: 교량-방향-위치-(내용선택).jpg  (일련번호 없음)
             name_parts = [bridge_s, direction_s, location_s]
             if desc_s:
                 name_parts.append(desc_s)
-            name_parts.append(seq)
             filename = DELIM.join(name_parts) + ".jpg"
 
-            # ✅ ZIP 내부 경로: 교량/점검일/방향/(내용선택)/파일.jpg
+            # ✅ ZIP 내부 경로: 교량/점검일/방향/위치/파일.jpg  (내용 폴더 X)
             if make_folders:
-                base_dir = f"{bridge_s}/{date_s}/{direction_s}"
-                if desc_s:
-                    base_dir += f"/{desc_s}"
-                arcname = f"{base_dir}/{filename}"
+                arcname = f"{bridge_s}/{date_s}/{direction_s}/{location_s}/{filename}"
             else:
                 arcname = filename
 
