@@ -126,7 +126,6 @@ desc = st.text_input("내용 (선택) 예: 균열, 박리, 누수")
 
 # ✅ 폴더 구조: 교량/점검일/방향/위치
 make_folders = st.checkbox("ZIP 내부를 폴더 구조로 저장", value=True)
-st.caption("폴더 예시: 교량/점검일/방향/위치/파일.jpg  (내용은 파일명에만 포함)")
 
 uploaded = st.file_uploader(
     "사진 선택 (여러 장 가능)",
