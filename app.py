@@ -105,7 +105,7 @@ def advanced_filter(keyword, bridges):
 # ======================================
 # UI
 # ======================================
-st.title("자동화 사진 분류 도우미")
+st.title("사진 분류 도우미")
 
 search = st.text_input("교량 검색")
 bridge_list = advanced_filter(search, bridges)
