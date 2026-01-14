@@ -114,7 +114,7 @@ def advanced_filter(keyword, bridges):
 # ======================================
 # UI
 # ======================================
-st.title("📷 점검사진 파일명 생성기 (하이픈 + ZIP 폴더 정리)")
+st.title("자동화 사진 분류 도우미)")
 
 search = st.text_input("교량 검색")
 bridge_list = advanced_filter(search, bridges)
@@ -185,7 +185,7 @@ if st.button("➕ 사진 추가"):
 # 저장 예정 파일명 표시
 # ======================================
 if st.session_state["saved_names"]:
-    st.markdown("### 📄 저장 예정 경로/파일명")
+    st.markdown("### 저장 예정 경로/파일명")
     st.caption("ZIP 파일 안에 아래 경로로 저장됩니다.")
     for name in st.session_state["saved_names"]:
         st.text(name)
