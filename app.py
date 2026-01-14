@@ -113,8 +113,6 @@ bridge = st.selectbox("교량 선택", bridge_list)
 
 direction = st.selectbox("방향", ["순천", "영암"])
 
-st.caption(f"점검일(폴더명)은 자동으로 오늘 날짜({DEFAULT_DATE})가 적용됩니다.")
-
 location = st.radio(
     "위치",
     ["A1","A2",
